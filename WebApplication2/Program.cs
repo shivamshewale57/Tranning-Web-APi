@@ -11,7 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//SS (About DI)add db context
+//New Changes (About DI)add db context
 builder.Services.AddDbContext<WebApiDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("WebApiConnectionString")));
 
