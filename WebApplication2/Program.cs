@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Web_Api.Data;
+using Web_Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +12,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//New Changes (About DI)add db context
+//New Changes (About DI)  add db context
 builder.Services.AddDbContext<WebApiDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("WebApiConnectionString")));
+
+// inject repository pattern 
+builder.Services.AddScoped<IRegionRepository,SQlRegionRepository
 
 var app = builder.Build();
 

@@ -11,8 +11,9 @@ namespace Web_Api.Data
 
 
         }
+        //create property of each
         public DbSet<Difficulty> Difficulties { get; set; }
-        public DbSet<Region> regions { get; set; }
+        public DbSet<Region> Regions { get; set; }
         public DbSet<Walk> walks { get; set; }
     }
 }
