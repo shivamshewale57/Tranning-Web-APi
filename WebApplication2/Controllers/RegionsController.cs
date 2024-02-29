@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Web_Api.Data;
@@ -18,11 +19,13 @@ namespace Web_Api.Controllers
         private readonly WebApiDbContext dbContext;
         // after injected repository we used this insted of Dbcontext
         private readonly IRegionRepository regionRepository;
+        private readonly IMapper mapper;
 
-        public RegionsController(WebApiDbContext dbContext,IRegionRepository regionRepository)
+        public RegionsController(WebApiDbContext dbContext, IRegionRepository regionRepository, IMapper mapper)
         {
             this.dbContext = dbContext;
             this.regionRepository = regionRepository;
+            this.mapper = mapper;
         }
 
         //**** Get All Regions *****//
@@ -31,40 +34,39 @@ namespace Web_Api.Controllers
         public async Task<IActionResult> Getall()
         {
 
-            // data from database
-            var regionsDomain = await regionRepository.GetAllAsync
+            //1. data from database
+            //2. after implimentation of repositery pattern  we use  regionRepository[layer between data & application]insted of dbContext.
+            var regionsDomain = await regionRepository.GetAllAsync();
 
-            // map domain models to dtos
-            var regionsDto = new List<RegionDto>();
-            foreach (var regionDomain in regionsDomain)
-            {
-                regionsDto.Add(new RegionDto()
-                    {
-                    Id = regionDomain.Id,
-                    Code= regionDomain.Code,
-                    Name= regionDomain.Name,
-                    RegionImageUrl = regionDomain.RegionImageUrl       
-                });
+            //// map domain models to dtos
+            //var regionsDto = new List<RegionDto>();
+            //foreach (var regionDomain in regionsDomain)
+            //{
+            //    regionsDto.Add(new RegionDto()
+            //        {
+            //        Id = regionDomain.Id,
+            //        Code= regionDomain.Code,
+            //        Name= regionDomain.Name,
+            //        RegionImageUrl = regionDomain.RegionImageUrl       
+            //    });
 
-            }
+            //}
+
+
             // return dto
-            return Ok(regionsDto);
+            return Ok(mapper.Map<List<RegionDto>>(regionsDomain));
         }
-
-
-
-
-
 
         //******* Get Region By Id ******
         [HttpGet]
         [Route("{id:int}")]
-        public async Task<IActionResult> GetById([FromRoute]int id) 
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
 
             // get region domain model from database
-            var regionDomain = await dbContext.Regions.FindAsync(id);
-            //var region = dbContext.regions.FirstOrDefault(x => x.Id == id);
+            //var regionDomain = await dbContext.Regions.FindAsync(id); : another aproch
+            // 2. after implemnting repository pattern we use regionRepository over dbContext
+            var regionDomain = await regionRepository.GetByIdAsync(id);
             if (regionDomain == null)
             {
                 return NotFound();
@@ -87,30 +89,40 @@ namespace Web_Api.Controllers
         //********* Create New Region ********
         //Url: http://localhost:portno/api/regions
         [HttpPost]
+
         public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
             //Map or Convert DTO to domain model
-            var regionDomainModel = new Region
-            {
-                Code = addRegionRequestDto.Code,
-                Name = addRegionRequestDto.Name,
-                RegionImageUrl = addRegionRequestDto.RegionImageUrl
+            //var regionDomainModel = new Region
+            //{
+            //    Code = addRegionRequestDto.Code,
+            //    Name = addRegionRequestDto.Name,
+            //    RegionImageUrl = addRegionRequestDto.RegionImageUrl
 
-            };
+            //};
+
+            // mapper implimaintation
+            var regionDomainModel = mapper.Map<Region>(addRegionRequestDto);
 
 
             //Use Domain Model To Create Region
-            await dbContext.Regions.AddAsync(regionDomainModel);
-            await dbContext.SaveChangesAsync();
+            //await dbContext.Regions.AddAsync(regionDomainModel);
+            //await dbContext.SaveChangesAsync();
+
+            //after imlementing repositry pattern 
+            regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
+
 
             // Map Domain model back to Dto
-            var regionDto = new RegionDto
-            {
-                Id = regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name = regionDomainModel.Name,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
+            //var regionDto = new RegionDto
+            //{
+            //    Id = regionDomainModel.Id,
+            //    Code = regionDomainModel.Code,
+            //    Name = regionDomainModel.Name,
+            //    RegionImageUrl = regionDomainModel.RegionImageUrl
+            //};
+
+            var regionDto = mapper.Map<RegionDto>(regionDomainModel);
 
             return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
         }
@@ -120,34 +132,20 @@ namespace Web_Api.Controllers
         //PUT:Url: http://localhost:portno/api/regions/{id}
         [HttpPut]
         [Route("{id:int}")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateRegionRequest updateRegionRequest)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
         {
+            //map DTO to domain Model
+            var regionDomainModel = mapper.Map<Region>(updateRegionRequestDto);
+
             // check if region is exist or not 
-            var regionDomainModel = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
+            regionDomainModel = await regionRepository.UpdateAsync(id, regionDomainModel);
             if (regionDomainModel == null)
             {
                 return NotFound();
-
             }
-            // Map Dto To Domain Model
-            regionDomainModel.Code = updateRegionRequest.Code;
-            regionDomainModel.Name = updateRegionRequest.Name;
-            regionDomainModel.RegionImageUrl = updateRegionRequest.RegionImageUrl;
-
-            await dbContext.SaveChangesAsync();
-
-            // Covert Domain Model to DTO
-            var regionDto = new RegionDto()
-            {
-                Id=regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name =regionDomainModel.Name,
-                RegionImageUrl=regionDomainModel.RegionImageUrl
-
-            };
 
             // pass dto back to the client 
-            return Ok(regionDto);
+            return Ok(mapper.Map<RegionDto>(regionDomainModel));
         }
 
 
@@ -157,31 +155,18 @@ namespace Web_Api.Controllers
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             // check if region is exist or not 
-            var regionDomainModel = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
+            var regionDomainModel = await regionRepository.DeleteAsync(id);
             if (regionDomainModel == null)
             {
-            return NotFound();
+                return NotFound();
             }
-
-            // if found Delete it 
-            dbContext.Regions.Remove(regionDomainModel);
-            await dbContext.SaveChangesAsync();
 
             // return deleted region back
             //map domain model to dto
-            var regionDto = new RegionDto()
-            {
-                Id = regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name = regionDomainModel.Name,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-
-            };
-
-            return Ok(new { Message = "Record deleted successfully", DeletedRegion = regionDto });
-            //return Ok(regionDto);
+            return Ok(mapper.Map<RegionDto>(regionDomainModel));
+            //return Ok(RegionDto);
 
         }
-             
+
     }
 }

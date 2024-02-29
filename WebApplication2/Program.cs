@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Web_Api.Data;
+using Web_Api.Mappings;
 using Web_Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +18,15 @@ builder.Services.AddDbContext<WebApiDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("WebApiConnectionString")));
 
 // inject repository pattern 
-builder.Services.AddScoped<IRegionRepository,SQlRegionRepository
+builder.Services.AddScoped<IRegionRepository, SQlRegionRepository>();
+
+builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
+
+
+
+
+// inject Auto mapper
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 var app = builder.Build();
 

@@ -1,6 +1,6 @@
-﻿namespace WebApplication2.Models.Domain
+﻿namespace Web_Api.Models.DTO
 {
-    public class Difficulty
+    public class DifficultyDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

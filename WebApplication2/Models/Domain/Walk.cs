@@ -2,15 +2,15 @@
 {
     public class Walk
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Name{ get; set; }
         public string Description { get; set; }
         public double LengthInKm{ get; set; }
         public string? WalkImageUrl{ get; set; }
 
         // make realtionship between these models 
-        public Guid DefficultyId { get; set; }
-        public Guid RegionId { get; set; }
+        public int DifficultyId { get; set; }
+        public int RegionId { get; set; }
 
         //navigation
 
