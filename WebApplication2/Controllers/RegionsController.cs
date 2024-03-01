@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Web_Api.CustomActionFilters;
 using Web_Api.Data;
 using Web_Api.Models.DTO;
 using Web_Api.Repositories;
@@ -89,42 +90,26 @@ namespace Web_Api.Controllers
         //********* Create New Region ********
         //Url: http://localhost:portno/api/regions
         [HttpPost]
+        [ValidateModel]
 
         public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
-            //Map or Convert DTO to domain model
-            //var regionDomainModel = new Region
-            //{
-            //    Code = addRegionRequestDto.Code,
-            //    Name = addRegionRequestDto.Name,
-            //    RegionImageUrl = addRegionRequestDto.RegionImageUrl
 
-            //};
+           
+            { // mapper implimaintation
+                var regionDomainModel = mapper.Map<Region>(addRegionRequestDto);
+                //after imlementing repositry pattern 
+                regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
 
-            // mapper implimaintation
-            var regionDomainModel = mapper.Map<Region>(addRegionRequestDto);
+                var regionDto = mapper.Map<RegionDto>(regionDomainModel);
 
+                return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
 
-            //Use Domain Model To Create Region
-            //await dbContext.Regions.AddAsync(regionDomainModel);
-            //await dbContext.SaveChangesAsync();
-
-            //after imlementing repositry pattern 
-            regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
+            }
+           
 
 
-            // Map Domain model back to Dto
-            //var regionDto = new RegionDto
-            //{
-            //    Id = regionDomainModel.Id,
-            //    Code = regionDomainModel.Code,
-            //    Name = regionDomainModel.Name,
-            //    RegionImageUrl = regionDomainModel.RegionImageUrl
-            //};
-
-            var regionDto = mapper.Map<RegionDto>(regionDomainModel);
-
-            return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
+           
         }
 
 
@@ -132,20 +117,26 @@ namespace Web_Api.Controllers
         //PUT:Url: http://localhost:portno/api/regions/{id}
         [HttpPut]
         [Route("{id:int}")]
+        [ValidateModel]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
         {
-            //map DTO to domain Model
-            var regionDomainModel = mapper.Map<Region>(updateRegionRequestDto);
-
-            // check if region is exist or not 
-            regionDomainModel = await regionRepository.UpdateAsync(id, regionDomainModel);
-            if (regionDomainModel == null)
+            
             {
-                return NotFound();
-            }
+                //map DTO to domain Model
+                var regionDomainModel = mapper.Map<Region>(updateRegionRequestDto);
 
-            // pass dto back to the client 
-            return Ok(mapper.Map<RegionDto>(regionDomainModel));
+                // check if region is exist or not 
+                regionDomainModel = await regionRepository.UpdateAsync(id, regionDomainModel);
+                if (regionDomainModel == null)
+                {
+                    return NotFound();
+                }
+
+                // pass dto back to the client 
+                return Ok(mapper.Map<RegionDto>(regionDomainModel));
+            }
+            
+                
         }
 
 

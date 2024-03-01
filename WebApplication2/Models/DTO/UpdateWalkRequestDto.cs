@@ -2,8 +2,9 @@
 
 namespace Web_Api.Models.DTO
 {
-    public class AddWalksRequestDto
+    public class UpdateWalkRequestDto
     {
+
         [Required]
         [MaxLength(100)]
         public string Name { get; set; }
@@ -13,7 +14,7 @@ namespace Web_Api.Models.DTO
         public string Description { get; set; }
 
         [Required]
-        [Range(0,50)]
+        [Range(0, 50)]
         public double LengthInKm { get; set; }
         public string? WalkImageUrl { get; set; }
         [Required]

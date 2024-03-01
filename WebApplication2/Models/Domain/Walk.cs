@@ -8,7 +8,7 @@
         public double LengthInKm{ get; set; }
         public string? WalkImageUrl{ get; set; }
 
-        // make realtionship between these models 
+       
         public int DifficultyId { get; set; }
         public int RegionId { get; set; }
 
