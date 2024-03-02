@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ namespace Web_Api.Controllers
     //[Route("api/[controller]")]
     [Route("api/Regions")]
     [ApiController]
+    [Authorize]
     public class RegionsController : ControllerBase
     {
         private readonly WebApiDbContext dbContext;

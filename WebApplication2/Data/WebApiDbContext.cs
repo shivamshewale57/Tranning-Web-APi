@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Web_Api.Models.Domain;
 using WebApplication2.Models.Domain;
 
 namespace Web_Api.Data
 {
     public class WebApiDbContext : DbContext
     {
-        public WebApiDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
+        public WebApiDbContext(DbContextOptions <WebApiDbContext> dbContextOptions) : base(dbContextOptions)
         {
 
 
@@ -15,6 +16,7 @@ namespace Web_Api.Data
         public DbSet<Difficulty> Difficulties { get; set; }
         public DbSet<Region> Regions { get; set; }
         public DbSet<Walk> Walks { get; set; }
+        public DbSet<Image> Images { get; set; }
 
         /// implementing seed
         protected override void OnModelCreating(ModelBuilder modelBuilder)
