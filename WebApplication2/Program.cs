@@ -7,10 +7,31 @@ using Web_Api.Repositories;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
+using Serilog;
+using Microsoft.Data.SqlClient;
+using Web_Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+// Add logging 
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/WebApi_Log.txt", rollingInterval: RollingInterval.Minute)
+    // if we changed information to warning will hide logs in console
+    .MinimumLevel.Warning()
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger); 
+
+    
+
+
 // Add services to the container.
+
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -66,6 +87,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// mmiddelware for global ex handle
+
+app.UseMiddleware<ExeptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 

@@ -53,6 +53,9 @@ namespace Web_Api.Controllers
         {
             var walksDomainModel = await walkRepository.GetallAsync(filterOn, filterQuery, sortBy,
                 isAsending?? true,pageNumber,pageSize);
+            throw new Exception("This is walk exeption");
+
+            //cerate ex 
 
             // map domain model to dto
             return Ok(mapper.Map<List<WalkDto>>(walksDomainModel));

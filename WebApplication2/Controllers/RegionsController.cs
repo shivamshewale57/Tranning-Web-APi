@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using Web_Api.CustomActionFilters;
 using Web_Api.Data;
 using Web_Api.Models.DTO;
@@ -16,19 +17,22 @@ namespace Web_Api.Controllers
     //[Route("api/[controller]")]
     [Route("api/Regions")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class RegionsController : ControllerBase
     {
         private readonly WebApiDbContext dbContext;
         // after injected repository we used this insted of Dbcontext
         private readonly IRegionRepository regionRepository;
         private readonly IMapper mapper;
+        private readonly ILogger<RegionsController> logger;
 
-        public RegionsController(WebApiDbContext dbContext, IRegionRepository regionRepository, IMapper mapper)
+        public RegionsController(WebApiDbContext dbContext, IRegionRepository regionRepository, 
+            IMapper mapper,ILogger<RegionsController>logger)
         {
             this.dbContext = dbContext;
             this.regionRepository = regionRepository;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         //**** Get All Regions *****//
@@ -37,27 +41,36 @@ namespace Web_Api.Controllers
         public async Task<IActionResult> Getall()
         {
 
+            /// ************** Logging ***********
+            //logger.LogInformation("region method is invoked");
+            //logger.LogWarning("this is warning ");
+            //logger.LogError("its error");
+
             //1. data from database
             //2. after implimentation of repositery pattern  we use  regionRepository[layer between data & application]insted of dbContext.
-            var regionsDomain = await regionRepository.GetAllAsync();
+            try
+            {
+                throw new Exception("this is custom exeption");
+                var regionsDomain = await regionRepository.GetAllAsync();
 
-            //// map domain models to dtos
-            //var regionsDto = new List<RegionDto>();
-            //foreach (var regionDomain in regionsDomain)
-            //{
-            //    regionsDto.Add(new RegionDto()
-            //        {
-            //        Id = regionDomain.Id,
-            //        Code= regionDomain.Code,
-            //        Name= regionDomain.Name,
-            //        RegionImageUrl = regionDomain.RegionImageUrl       
-            //    });
-
-            //}
+                logger.LogInformation($"all region Data :{JsonSerializer.Serialize(regionsDomain)}");
 
 
-            // return dto
-            return Ok(mapper.Map<List<RegionDto>>(regionsDomain));
+
+
+
+
+                // return dto
+                return Ok(mapper.Map<List<RegionDto>>(regionsDomain));
+            }
+            catch (Exception ex)
+            {
+
+                logger.LogError(ex, ex.Message);
+
+                throw;
+            }
+            
         }
 
         //******* Get Region By Id ******
