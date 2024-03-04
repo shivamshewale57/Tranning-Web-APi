@@ -48,9 +48,9 @@ namespace Web_Api.Controllers
 
             //1. data from database
             //2. after implimentation of repositery pattern  we use  regionRepository[layer between data & application]insted of dbContext.
-            try
+            
             {
-                throw new Exception("this is custom exeption");
+                
                 var regionsDomain = await regionRepository.GetAllAsync();
 
                 logger.LogInformation($"all region Data :{JsonSerializer.Serialize(regionsDomain)}");
@@ -63,13 +63,7 @@ namespace Web_Api.Controllers
                 // return dto
                 return Ok(mapper.Map<List<RegionDto>>(regionsDomain));
             }
-            catch (Exception ex)
-            {
-
-                logger.LogError(ex, ex.Message);
-
-                throw;
-            }
+           
             
         }
 
